@@ -1,0 +1,50 @@
+# .NET build and publish output
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+[Pp]ublish/
+
+# IDE caches and user settings
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# Test results and coverage
+[Tt]est[Rr]esults/
+coverage/
+*.coverage
+*.coveragexml
+*.trx
+
+# NuGet packages and generated archives
+packages/
+*.nupkg
+*.snupkg
+
+# Logs
+logs/
+*.log
+
+# Local environment settings and certificates
+.env
+.env.*
+!.env.example
+!.env.template
+appsettings.[Ll]ocal.json
+appsettings.*.[Ll]ocal.json
+*.pfx
+*.p12
+
+# Local SQL Server database files
+*.mdf
+*.ndf
+*.ldf
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
