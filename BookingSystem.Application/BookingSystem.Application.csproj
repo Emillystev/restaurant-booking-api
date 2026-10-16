@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BookingSystem.API\BookingSystem.API.csproj" />
     <ProjectReference Include="..\BookingSystem.Domain\BookingSystem.Domain.csproj" />
+    <ProjectReference Include="..\BookingSystem.Infrastructure\BookingSystem.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

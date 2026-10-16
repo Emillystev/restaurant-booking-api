@@ -1,11 +1,18 @@
 ﻿using BookingSystem.Application.Common.Models;
 using BookingSystem.Application.Reservations.DTOs;
 using BookingSystem.Domain.Enums;
+using BookingSystem.Infrastructure;
 
 namespace BookingSystem.Application.Reservations;
 
 public class ReservationService : IReservationService
 {
+    private readonly AppDbContext _db;
+
+    public ReservationService(AppDbContext db)
+    {
+        _db = db;
+    }
     public Task CancelAsync(Guid reservationId, CancellationToken ct = default)
     {
         throw new NotImplementedException();

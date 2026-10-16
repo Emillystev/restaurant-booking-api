@@ -2,6 +2,7 @@
 using BookingSystem.Application.Reservations;
 using BookingSystem.Application.Restaurants;
 using BookingSystem.Application.Tables;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BookingSystem.Application;

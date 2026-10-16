@@ -2,6 +2,7 @@
 using BookingSystem.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Reflection.Metadata;
 
 namespace BookingSystem.Infrastructure;
 
@@ -19,6 +20,15 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        modelBuilder.HasDefaultSchema("dbo");
+
+        modelBuilder.Entity<User>().ToTable("users");
+        modelBuilder.Entity<Restaurant>().ToTable("restaurants");
+        modelBuilder.Entity<Zone>().ToTable("zones");
+        modelBuilder.Entity<RestaurantTable>().ToTable("tables");
+        modelBuilder.Entity<Reservation>().ToTable("reservations");
+        modelBuilder.Entity<ClosedDate>().ToTable("closed_dates");
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)

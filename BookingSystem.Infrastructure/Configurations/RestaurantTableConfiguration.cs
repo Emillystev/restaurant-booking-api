@@ -18,5 +18,7 @@ public class RestaurantTableConfiguration : IEntityTypeConfiguration<RestaurantT
          .WithOne(r => r.Table)
          .HasForeignKey(r => r.TableId)
          .OnDelete(DeleteBehavior.Restrict);
+
+        b.HasQueryFilter(t => !t.Zone.Restaurant.IsDeleted);
     }
 }

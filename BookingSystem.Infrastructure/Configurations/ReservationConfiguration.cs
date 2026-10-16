@@ -25,5 +25,7 @@ public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
          .WithMany(u => u.Reservations)
          .HasForeignKey(x => x.CustomerId)
          .OnDelete(DeleteBehavior.Restrict);
+
+        b.HasQueryFilter(r => !r.Table.Zone.Restaurant.IsDeleted);
     }
 }

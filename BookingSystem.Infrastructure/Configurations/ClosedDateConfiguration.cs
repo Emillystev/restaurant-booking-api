@@ -11,5 +11,7 @@ public class ClosedDateConfiguration : IEntityTypeConfiguration<ClosedDate>
         b.HasKey(x => x.Id);
         b.Property(x => x.Reason).HasMaxLength(200);
         b.HasIndex(x => new { x.RestaurantId, x.Date }).IsUnique();
+
+        b.HasQueryFilter(c => !c.Restaurant.IsDeleted);
     }
 }

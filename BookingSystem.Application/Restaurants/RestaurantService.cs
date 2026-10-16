@@ -1,9 +1,16 @@
 ﻿using BookingSystem.Application.Restaurants.DTOs;
+using BookingSystem.Infrastructure;
 
 namespace BookingSystem.Application.Restaurants;
 
 public class RestaurantService : IRestaurantService
 {
+    private readonly AppDbContext _db;
+
+    public RestaurantService(AppDbContext db)
+    {
+        _db = db;
+    }
     public Task AddClosedDateAsync(Guid restaurantId, DateOnly date, string? reason, CancellationToken ct = default)
     {
         throw new NotImplementedException();
