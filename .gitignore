@@ -29,6 +29,9 @@ packages/
 logs/
 *.log
 
+# Personal planning notes
+/TODO.local.md
+
 # Local environment settings and certificates
 .env
 .env.*

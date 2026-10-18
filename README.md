@@ -121,6 +121,19 @@ dotnet run --project BookingSystem.API --launch-profile https
 
 The HTTPS profile requires a trusted ASP.NET Core development certificate.
 
+### Development seed and test passwords
+
+`DbSeeder` includes the following accounts for local Development testing:
+
+| Role | Email | Test password |
+| --- | --- | --- |
+| Admin | `admin@booking.local` | `Admin123!` |
+| Customer | `customer@booking.local` | `Customer123!` |
+
+> **Warning:** these are public test credentials for Development seed data only. They must never be used in production.
+
+In `BookingSystem.API/Program.cs`, `DbSeeder.SeedAsync(db)` is called inside `if (app.Environment.IsDevelopment())`, after database migrations are applied. This seed is not executed by application startup in Production.
+
 ### Full solution build
 
 ```bash
