@@ -17,4 +17,10 @@
     <ProjectReference Include="..\BookingSystem.Infrastructure\BookingSystem.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Auth\Validators\" />
+    <Folder Include="Restaurants\Validators\" />
+    <Folder Include="Tables\Validators\" />
+  </ItemGroup>
+
 </Project>

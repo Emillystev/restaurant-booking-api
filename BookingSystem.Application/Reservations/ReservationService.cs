@@ -1,5 +1,6 @@
 ﻿using BookingSystem.Application.Common.Models;
 using BookingSystem.Application.Reservations.DTOs;
+using BookingSystem.Domain.Entities;
 using BookingSystem.Domain.Enums;
 using BookingSystem.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -70,14 +71,82 @@ public class ReservationService : IReservationService
         await _db.SaveChangesAsync(ct);
     }
 
-    public Task<ReservationResponse> CreateAsync(CreateReservationRequest request, CancellationToken ct = default)
+    public async Task<ReservationResponse> CreateAsync(CreateReservationRequest request, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var reservation = new Reservation()
+        {
+            TableId = request.TableId,
+            StartTime = request.StartTime,
+            GuestsCount = request.GuestsCount,
+            SpecialRequests = request.SpecialRequests,
+            Status = ReservationStatus.Pending
+        };
+
+        _db.Reservations.Add(reservation);
+        await _db.SaveChangesAsync(ct);
+
+        return new ReservationResponse
+        {
+            Id = reservation.Id,
+            TableId = reservation.TableId,
+            CustomerId = reservation.CustomerId,
+            StartTime = reservation.StartTime,
+            EndTime = reservation.EndTime,
+            GuestsCount = reservation.GuestsCount,
+            Status = reservation.Status,
+            SpecialRequests = reservation.SpecialRequests,
+            CreatedAt = reservation.CreatedAt,
+            UpdatedAt = reservation.UpdatedAt
+        };
     }
 
-    public Task<PagedResult<ReservationResponse>> GetAllAsync(ReservationFilterRequest request, CancellationToken ct = default)
+    public async Task<PagedResult<ReservationResponse>> GetAllAsync(ReservationFilterRequest request, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.Page);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.PageSize);
+
+        var query = _db.Reservations
+            .AsNoTracking()
+            .Where(reservation =>
+                (!request.RestaurantId.HasValue ||
+                    (reservation.Table != null && reservation.Table.Zone.RestaurantId == request.RestaurantId)) &&
+                (!request.TableId.HasValue || reservation.TableId == request.TableId) &&
+                (!request.CustomerId.HasValue || reservation.CustomerId == request.CustomerId) &&
+                (!request.Status.HasValue || reservation.Status == request.Status) &&
+                (!request.StartTimeFrom.HasValue || reservation.StartTime >= request.StartTimeFrom) &&
+                (!request.StartTimeTo.HasValue || reservation.StartTime <= request.StartTimeTo));
+
+        var totalCount = await query.CountAsync(ct);
+        var skip = checked((request.Page - 1) * request.PageSize);
+
+        var items = await query
+            .OrderByDescending(reservation => reservation.StartTime)
+            .ThenBy(reservation => reservation.Id)
+            .Skip(skip)
+            .Take(request.PageSize)
+            .Select(reservation => new ReservationResponse
+            {
+                Id = reservation.Id,
+                TableId = reservation.TableId,
+                CustomerId = reservation.CustomerId,
+                StartTime = reservation.StartTime,
+                EndTime = reservation.EndTime,
+                GuestsCount = reservation.GuestsCount,
+                Status = reservation.Status,
+                SpecialRequests = reservation.SpecialRequests,
+                CreatedAt = reservation.CreatedAt,
+                UpdatedAt = reservation.UpdatedAt
+            })
+            .ToListAsync(ct);
+
+        return new PagedResult<ReservationResponse>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
     }
 
     public Task<List<AvailableTableResponse>> GetAvailableTablesAsync(AvailabilityRequest request, CancellationToken ct = default)
