@@ -5,6 +5,7 @@ using BookingSystem.Application.Reservations.DTOs;
 using BookingSystem.Domain.Entities;
 using BookingSystem.Domain.Enums;
 using BookingSystem.Infrastructure;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookingSystem.Application.Reservations;
@@ -13,11 +14,22 @@ public class ReservationService : IReservationService
 {
     private readonly AppDbContext _db;
     private readonly ICurrentUser _currentUser;
+    private readonly IValidator<CreateReservationRequest> _createValidator;
+    private readonly IValidator<ReservationFilterRequest> _filterValidator;
+    private readonly IValidator<AvailabilityRequest> _availabilityValidator;
 
-    public ReservationService(AppDbContext db, ICurrentUser currentUser)
+    public ReservationService(
+        AppDbContext db,
+        ICurrentUser currentUser,
+        IValidator<CreateReservationRequest> createValidator,
+        IValidator<ReservationFilterRequest> filterValidator,
+        IValidator<AvailabilityRequest> availabilityValidator)
     {
         _db = db;
         _currentUser = currentUser;
+        _createValidator = createValidator;
+        _filterValidator = filterValidator;
+        _availabilityValidator = availabilityValidator;
     }
     public async Task CancelAsync(Guid reservationId, CancellationToken ct = default)
     {
@@ -77,6 +89,9 @@ public class ReservationService : IReservationService
 
     public async Task<ReservationResponse> CreateAsync(CreateReservationRequest request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        await _createValidator.ValidateAndThrowAsync(request, ct);
+
         var reservation = new Reservation()
         {
             TableId = request.TableId,
@@ -107,8 +122,7 @@ public class ReservationService : IReservationService
     public async Task<PagedResult<ReservationResponse>> GetAllAsync(ReservationFilterRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.Page);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.PageSize);
+        await _filterValidator.ValidateAndThrowAsync(request, ct);
 
         var query = _db.Reservations
             .AsNoTracking()
@@ -156,22 +170,7 @@ public class ReservationService : IReservationService
     public async Task<List<AvailableTableResponse>> GetAvailableTablesAsync(AvailabilityRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.GuestsCount);
-
-        if (request.RestaurantId == Guid.Empty)
-        {
-            throw new ArgumentException("RestaurantId is required.", nameof(request));
-        }
-
-        if (request.StartTime.Kind != DateTimeKind.Utc)
-        {
-            throw new ArgumentException("StartTime must be specified in UTC.", nameof(request));
-        }
-
-        if (request.StartTime <= DateTime.UtcNow)
-        {
-            throw new ArgumentException("StartTime must be in the future.", nameof(request));
-        }
+        await _availabilityValidator.ValidateAndThrowAsync(request, ct);
 
         var restaurant = await _db.Restaurants
             .AsNoTracking()

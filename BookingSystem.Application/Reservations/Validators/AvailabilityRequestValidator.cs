@@ -15,6 +15,8 @@ public class AvailabilityRequestValidator : AbstractValidator<AvailabilityReques
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
             .WithMessage("StartTime is required.")
+            .Must(startTime => startTime.Kind == DateTimeKind.Utc)
+            .WithMessage("StartTime must be specified in UTC.")
             .GreaterThan(_ => DateTime.UtcNow)
             .WithMessage("StartTime must be in the future.");
 

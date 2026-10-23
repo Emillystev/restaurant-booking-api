@@ -1,6 +1,7 @@
 ﻿using BookingSystem.Application.Tables.DTOs;
 using BookingSystem.Domain.Entities;
 using BookingSystem.Infrastructure;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookingSystem.Application.Tables;
@@ -8,13 +9,22 @@ namespace BookingSystem.Application.Tables;
 public class TableService : ITableService
 {
     private readonly AppDbContext _db;
-    public TableService(AppDbContext db)
+    private readonly IValidator<CreateTableRequest> _createValidator;
+    private readonly IValidator<UpdateTableRequest> _updateValidator;
+
+    public TableService(
+        AppDbContext db,
+        IValidator<CreateTableRequest> createValidator,
+        IValidator<UpdateTableRequest> updateValidator)
     {
-        _db = db;   
+        _db = db;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
     }
     public async Task<TableResponse> CreateAsync(CreateTableRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        await _createValidator.ValidateAndThrowAsync(request, ct);
 
         var table = new RestaurantTable()
         {
@@ -54,7 +64,7 @@ public class TableService : ITableService
     public async Task UpdateAsync(Guid id, UpdateTableRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.Capacity);
+        await _updateValidator.ValidateAndThrowAsync(request, ct);
 
         var table = await _db.Tables
             .SingleOrDefaultAsync(table => table.Id == id, ct)

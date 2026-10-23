@@ -15,7 +15,7 @@ A restaurant table reservation backend built with C# and ASP.NET Core. The proje
 | OpenAPI | JSON document exposed in the Development environment |
 | Swagger UI | Interactive documentation at `/swagger` in Development |
 | BCrypt.Net-Next | Password hashing for Development seed accounts |
-| FluentValidation | Validator discovery registered; request validators still planned |
+| FluentValidation | Request validators registered and invoked asynchronously by application services |
 | Mapster | Package included for future DTO mapping |
 | JWT Bearer authentication | Package included; authentication setup planned |
 | Serilog | Package included; logging integration planned |
@@ -87,7 +87,9 @@ Restaurant reads use `AsNoTracking`. Missing entities raise `KeyNotFoundExceptio
 
 Table updates check positive capacity, target zone existence, and duplicate table numbers within that zone. When an optional `RowVersion` is supplied, it is used as the original concurrency token; stale writes can raise `DbUpdateConcurrencyException`. Deactivation sets `IsActive` to `false`.
 
-These are service implementations. API controllers and HTTP error handling have not been added yet, and request validation remains partial.
+Each request DTO has a FluentValidation validator in its feature's `Validators` directory. Services call `ValidateAndThrowAsync(request, ct)` before processing requests; invalid input raises `FluentValidation.ValidationException`. Rules cover required fields, database string limits, positive counts, UTC reservation timestamps, filter ranges, and optional 8-byte table row versions. Registration passwords require at least 8 characters. Restaurant opening and closing times must differ; overnight schedules and midnight are supported.
+
+These are service implementations. API controllers and HTTP error handling have not been added yet.
 
 ## Domain model
 
@@ -216,6 +218,7 @@ The seeded accounts are sample database records. Login endpoints and JWT token i
 - [ ] Implement availability searches, booking creation and cancellation, reservation lists, and status changes.
 - [ ] Enforce opening hours, closed dates, guest capacity, and protection against overlapping bookings, including concurrent requests.
 - [ ] Add API controllers and role-based authorization.
-- [ ] Add request validators, DTO mapping, error handling, and structured logging.
+- [x] Add request validators and invoke them from application services.
+- [ ] Add DTO mapping, error handling, and structured logging.
 - [ ] Resolve nullable navigation warnings in EF Core query filters.
 - [ ] Add automated tests and API usage examples.

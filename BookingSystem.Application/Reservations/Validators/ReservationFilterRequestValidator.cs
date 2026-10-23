@@ -16,17 +16,17 @@ public class ReservationFilterRequestValidator : AbstractValidator<ReservationFi
             .WithMessage("PageSize must be greater than zero.");
 
         RuleFor(request => request.RestaurantId)
-            .NotEmpty()
+            .NotEqual(Guid.Empty)
             .WithMessage("RestaurantId must not be an empty GUID when provided.")
             .When(request => request.RestaurantId.HasValue);
 
         RuleFor(request => request.TableId)
-            .NotEmpty()
+            .NotEqual(Guid.Empty)
             .WithMessage("TableId must not be an empty GUID when provided.")
             .When(request => request.TableId.HasValue);
 
         RuleFor(request => request.CustomerId)
-            .NotEmpty()
+            .NotEqual(Guid.Empty)
             .WithMessage("CustomerId must not be an empty GUID when provided.")
             .When(request => request.CustomerId.HasValue);
 
@@ -34,6 +34,14 @@ public class ReservationFilterRequestValidator : AbstractValidator<ReservationFi
             .IsInEnum()
             .WithMessage("Status must be a valid reservation status.")
             .When(request => request.Status.HasValue);
+
+        RuleFor(request => request.StartTimeFrom)
+            .Must(startTime => !startTime.HasValue || startTime.Value.Kind == DateTimeKind.Utc)
+            .WithMessage("StartTimeFrom must be specified in UTC.");
+
+        RuleFor(request => request.StartTimeTo)
+            .Must(startTime => !startTime.HasValue || startTime.Value.Kind == DateTimeKind.Utc)
+            .WithMessage("StartTimeTo must be specified in UTC.");
 
         RuleFor(request => request.StartTimeTo)
             .Must((request, end) => end!.Value >= request.StartTimeFrom!.Value)

@@ -1,6 +1,7 @@
 ﻿using BookingSystem.Application.Restaurants.DTOs;
 using BookingSystem.Domain.Entities;
 using BookingSystem.Infrastructure;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookingSystem.Application.Restaurants;
@@ -8,10 +9,17 @@ namespace BookingSystem.Application.Restaurants;
 public class RestaurantService : IRestaurantService
 {
     private readonly AppDbContext _db;
+    private readonly IValidator<CreateRestaurantRequest> _createValidator;
+    private readonly IValidator<UpdateRestaurantRequest> _updateValidator;
 
-    public RestaurantService(AppDbContext db)
+    public RestaurantService(
+        AppDbContext db,
+        IValidator<CreateRestaurantRequest> createValidator,
+        IValidator<UpdateRestaurantRequest> updateValidator)
     {
         _db = db;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
     }
 
     public async Task AddClosedDateAsync(Guid restaurantId, DateOnly date, string? reason, CancellationToken ct = default)
@@ -47,6 +55,7 @@ public class RestaurantService : IRestaurantService
     public async Task<RestaurantResponse> CreateAsync(CreateRestaurantRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        await _createValidator.ValidateAndThrowAsync(request, ct);
 
         var restaurant = new Restaurant
         {
@@ -131,6 +140,7 @@ public class RestaurantService : IRestaurantService
     public async Task UpdateAsync(Guid id, UpdateRestaurantRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        await _updateValidator.ValidateAndThrowAsync(request, ct);
 
         var restaurant = await _db.Restaurants
             .SingleOrDefaultAsync(restaurant => restaurant.Id == id, ct)
